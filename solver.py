@@ -45,6 +45,9 @@ def eliminate(sudoku, indice, valor_intento):
     if valor_intento not in sudoku[indice].posibleValues:
         return sudoku
     sudoku[indice].posibleValues = sudoku[indice].posibleValues.replace(valor_intento, '')
+    if isinstance(sudoku, PygameCell):
+        sudoku[indice].draw()
+        pygame.time.wait(wait_milli)
     if len(sudoku[indice].posibleValues) == 0:
         return False
     elif len(sudoku[indice].posibleValues) == 1:
@@ -56,7 +59,7 @@ def eliminate(sudoku, indice, valor_intento):
         if len(new_tries) == 0:
             return False
         elif len(new_tries) == 1:
-            if not assign(sudoku, new_tries[0], valor_intento):
+            if not assign(copy.deepcopy(sudoku), new_tries[0], valor_intento):
                 return False
     return sudoku
 
@@ -76,7 +79,7 @@ def loadSudoku(fileName: str, clase = Celda):
         for j in range(len(fila)):
             numero = re.search("[0-9]+", fila[j])
             numero = None if numero is None else numero.string
-            sudoku.append(clase(str(numero), i, j))
+            sudoku.append(clase(numero, i, j))
     return sudoku
 
 def applyConstraint(sudoku: list[list[Celda]], celda: Celda):
@@ -109,7 +112,9 @@ def propagateConstraints(sudoku: list[list[Celda]]):
 def main():
     sudoku = loadSudoku(sys.argv[1], Celda)
     sudoku = busqueda(sudoku)
-    for row in 
+    for fila in range(Celda.tableSize):
+        for col in range(Celda.tableSize):
+            print(sudoku[fila + col * Celda.tableSize].posibleValues)
     
 
 if __name__ == "__main__":

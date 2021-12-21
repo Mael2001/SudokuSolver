@@ -81,8 +81,8 @@ class PygameCell(Celda):
             digit = self.text.render(self.val, True, (255,0,0))
             PygameCell.screen.blit(digit, (self.row * PygameCell.size + int(3/num_values) * square_size + 8, self.col * PygameCell.size + int(3/num_values) * square_size - 10))
         else:
-            for val in self.posibleValues:
-                val = int(val)
-                digit = self.text.render(val, True, (0,0,0))
+            for v in self.posibleValues:
+                val = int(v)
+                digit = self.text.render(v, True, (0,0,0))
                 PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
         pygame.display.flip()
