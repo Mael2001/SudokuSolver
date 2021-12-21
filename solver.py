@@ -2,25 +2,28 @@ import sys
 import math
 import numpy as np
 import threading
+import re
+from common import *
 
-class Celda:
-    def __init__(self, val: int, row: int, col: int, tableSize: int):
-        self.val = val
-        self.row = row
-        self.col = col
-        self.posibleValues = { i for i in range(1, tableSize + 1) } if val is None else { i for i in range(val, val+1) }
+wait_milli = 50
 
-def loadSudoku(fileName: str):
+#class AntSystem():
+
+#class Board():
+
+def loadSudoku(fileName: str, clase = Celda):
     lines = open(fileName).readlines()
     if not len(lines) == len(lines[0].replace("\n", "").split(",")):
         exit(1)
     tableSize = len(lines)
-    sudoku = np.empty((0, tableSize), Celda)
+    sudoku = np.empty((0, tableSize), clase)
     for i in range(len(lines)):
         fila = lines[i].replace("\n", "").split(",")
         row = []
         for j in range(len(fila)):
-            row = np.append(row, [Celda(None, i, j, tableSize) if " " in fila[j] else Celda(int(fila[j]), i, j, tableSize)], axis=0)
+            numero = re.search("[0-9]+", fila[j])
+            numero = None if numero is None else int(numero.string)
+            row = np.append(row, [clase(numero, i, j)], axis=0)
         sudoku = np.append(sudoku, [row], axis=0)
     return sudoku
 
@@ -33,16 +36,15 @@ def applyConstraint(sudoku: list[list[Celda]], celda: Celda):
         return celda
     for col in range(len(sudoku)):
         val = sudoku[celda.row][col].val
-        celda.posibleValues.discard(val)
+        celda.discard(val)
     for row in range(len(sudoku)):
         val = sudoku[row][celda.col].val
-        celda.posibleValues.discard(val)
+        celda.discard(val)
     offset = calcSubMatrixIndexOffset(sudoku, celda)
-    print(offset * int(celda.row / offset), offset * int(celda.row / offset) + offset)
     for i in range(offset * int(celda.col / offset), offset * int(celda.col / offset) + offset):
         for j in range(offset * int(celda.row / offset), offset * int(celda.row / offset) + offset):
             if not celda.col == i and not celda.row == i:
-                celda.posibleValues.discard(sudoku[j][i].val)
+                celda.discard(sudoku[j][i].val)
             if len(celda.posibleValues) == 1:
                 for v in celda.posibleValues:
                     celda.val = v
@@ -52,18 +54,14 @@ def propagateConstraints(sudoku: list[list[Celda]]):
     for fila in range(len(sudoku)):
         for col in range(len(sudoku)):
             sudoku[fila][col] = applyConstraint(sudoku, sudoku[fila][col])
-    for fila in range(len(sudoku)):
-        for col in range(len(sudoku)):
-            sudoku[fila][col] = applyConstraint(sudoku, sudoku[fila][col])
+            if isinstance(sudoku[0][0], PygameCell):
+                pygame.time.wait(wait_milli)
+                sudoku[fila][col].draw()
     return sudoku
 
 def main():
-    sudoku = loadSudoku(sys.argv[1])
-    sudoku = propagateConstraints(sudoku)
-    for i in range(len(sudoku)):
-        for j in range(len(sudoku)):
-            print("row: " + str(i) + " col: " + str(j) + " value: " + str(sudoku[i][j].val), sudoku[i][j].posibleValues)
-        print()
+    sudoku = loadSudoku(sys.argv[1], Celda)
+    propagateConstraints(sudoku)
     
 
 if __name__ == "__main__":
