@@ -7,9 +7,22 @@ from common import *
 
 wait_milli = 50
 
-#class AntSystem():
+"""
+class Ant():
 
-#class Board():
+
+class Board():
+    def __init__(self, fileName: str, CellType = Celda):
+        order = len(lines)
+        self.cells = np.empty((0, order), clase)
+        for i in range(len(lines)):
+            fila = lines[i].replace("\n", "").split(",")
+            row = []
+            for j in range(len(fila)):
+                numero = re.search("[0-9]+", fila[j])
+                numero = None if numero is None else int(numero.string)
+                self.append = np.append(self.append, [clase(numero, i, j)], axis=0)
+                """
 
 def loadSudoku(fileName: str, clase = Celda):
     lines = open(fileName).readlines()
@@ -28,16 +41,15 @@ def loadSudoku(fileName: str, clase = Celda):
     return sudoku
 
 def calcSubMatrixIndexOffset(sudoku: list[list[Celda]], celda: Celda):
-    return int(math.sqrt(len(sudoku)))
-
+    return int(math.sqrt(Celda.tableSize))
 
 def applyConstraint(sudoku: list[list[Celda]], celda: Celda):
     if celda.val is not None:
         return celda
-    for col in range(len(sudoku)):
+    for col in range(Celda.tableSize):
         val = sudoku[celda.row][col].val
         celda.discard(val)
-    for row in range(len(sudoku)):
+    for row in range(Celda.tableSize):
         val = sudoku[row][celda.col].val
         celda.discard(val)
     offset = calcSubMatrixIndexOffset(sudoku, celda)
@@ -46,13 +58,12 @@ def applyConstraint(sudoku: list[list[Celda]], celda: Celda):
             if not celda.col == i and not celda.row == i:
                 celda.discard(sudoku[j][i].val)
             if len(celda.posibleValues) == 1:
-                for v in celda.posibleValues:
-                    celda.val = v
+                celda.val = int(celda.posibleValues)
     return celda
 
 def propagateConstraints(sudoku: list[list[Celda]]):
-    for fila in range(len(sudoku)):
-        for col in range(len(sudoku)):
+    for fila in range(Celda.tableSize):
+        for col in range(Celda.tableSize):
             sudoku[fila][col] = applyConstraint(sudoku, sudoku[fila][col])
             if isinstance(sudoku[0][0], PygameCell):
                 pygame.time.wait(wait_milli)

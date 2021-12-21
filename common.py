@@ -12,9 +12,14 @@ class Celda:
         self.col = col
         if tableSize is None:
             self.tableSize = Celda.tableSize
-        self.posibleValues = { i for i in range(1, self.tableSize + 1) } if val is None else { i for i in range(val, val+1) }
+        #self.posibleValues = { i for i in range(1, self.tableSize + 1) } if val is None else { i for i in range(val, val+1) }
+        self.posibleValues = ""
+        for x in range(1, Celda.tableSize + 1):
+            self.posibleValues = self.posibleValues + str(x)
     def discard(self, v):
-        self.posibleValues.discard(v)
+        if v is None:
+            return
+        self.posibleValues = self.posibleValues.replace(str(v), '')
 
 
 class PygameCell(Celda):
@@ -45,6 +50,7 @@ class PygameCell(Celda):
             PygameCell.screen.blit(digit, (self.row * PygameCell.size + int(3/num_values) * square_size + 8, self.col * PygameCell.size + int(3/num_values) * square_size - 10))
         else:
             for val in self.posibleValues:
+                val = int(val)
                 digit = self.text.render(str(val), True, (0,0,0))
                 PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((val - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((val - 1) / num_values) * square_size + 3))
         pygame.display.flip()
