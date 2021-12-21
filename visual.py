@@ -24,15 +24,14 @@ def visual():
                 if event.key == K_q:
                     exit(0)
                 if event.key == K_r:
-                    sudoku[0][0].discard(i)
+                    sudoku[0].discard(i)
                     i += 1
-                    if len(sudoku[0][0].posibleValues) == 1:
-                        sudoku[0][0].val = i
+                    if len(sudoku[0].posibleValues) == 1:
+                        sudoku[0].val = i
             elif event.type == QUIT:
                 exit(0)
-            for row in sudoku:
-                for c in row:
-                    c.draw()
+            for c in sudoku:
+                c.draw()
             if not propagated:
                 propagateConstraints(sudoku)
                 propagated = True
