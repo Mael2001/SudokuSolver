@@ -6,7 +6,7 @@ import re
 from common import *
 
 sys.setrecursionlimit(150000)
-wait_milli = 100
+wait_milli = 0
 
 """
 class Ant():
@@ -45,7 +45,7 @@ def eliminate(sudoku, indice, valor_intento):
     if valor_intento not in sudoku[indice].posibleValues:
         return sudoku
     sudoku[indice].posibleValues = sudoku[indice].posibleValues.replace(valor_intento, '')
-    if isinstance(sudoku, PygameCell):
+    if isinstance(sudoku[0], PygameCell):
         sudoku[indice].draw()
         pygame.time.wait(wait_milli)
     if len(sudoku[indice].posibleValues) == 0:
@@ -97,7 +97,7 @@ def applyConstraint(sudoku: list[list[Celda]], celda: Celda):
             if not celda.col == i and not celda.row == i:
                 celda.discard(sudoku[j + i * Celda.tableSize].val)
             if len(celda.posibleValues) == 1:
-                celda.val = int(celda.posibleValues)
+                celda.val = celda.posibleValues
     return celda
 
 def propagateConstraints(sudoku: list[list[Celda]]):
