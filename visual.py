@@ -32,10 +32,10 @@ def visual():
                 exit(0)
             for c in sudoku:
                 c.draw()
+            if not propagated:
+                propagateConstraints(sudoku)
+                propagated = True
             busqueda(sudoku)
-            #if not propagated:
-                #propagateConstraints(sudoku)
-                #propagated = True
 
 if __name__ == "__main__":
     visual()

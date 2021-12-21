@@ -55,34 +55,40 @@ class Celda:
 
 
 class PygameCell(Celda):
+    surfaceArray = []
     size = Celda.tableSize * 3
     screen = None
     #all_cells = pygame.sprite.RenderUpdates()
     def __init__(self, val: str, row: int, col: int):
         super(PygameCell, self).__init__(val, row, col)
-        self.size = (PygameCell.size - 2, PygameCell.size - 2)
-        self.fill = pygame.Surface(self.size)
-        self.fill.fill((255,255,255))
-        self.outline = pygame.Surface(self.size)
-        self.outline.fill((255,0,0))
-        self.position = (self.row * PygameCell.size, self.col * PygameCell.size)
-        self.text = pygame.font.SysFont(None, int(Celda.tableSize * 3))
+        self.size = ((PygameCell.size - 2, PygameCell.size - 2))
+        PygameCell.surfaceArray.append({
+            'fill': pygame.Surface(self.size),
+        #self.outline = pygame.Surface(self.size)
+        #self.outline.fill((255,0,0))
+            'position' :(self.row * PygameCell.size, self.col * PygameCell.size),
+            'text': pygame.font.SysFont(None, int(Celda.tableSize * 3)),
+            })
 
     def __getitem__(self, i):
         return type(self)
 
     def draw(self):
         #PygameCell.screen.blit(self.outline, (self.row * PygameCell.size, self.col * PygameCell.size))
-        PygameCell.screen.blit(self.fill, (self.row * (PygameCell.size) + 1, self.col * (PygameCell.size) + 1))
+        arr = PygameCell.surfaceArray[self.row + self.col * Celda.tableSize]
+        text = arr['text']
+        fill = arr['fill']
+        fill.fill((255,255,255))
+        PygameCell.screen.blit(fill, (self.row * (PygameCell.size) + 1, self.col * (PygameCell.size) + 1))
         num_values = math.sqrt(Celda.tableSize)
         square_size = PygameCell.size / num_values
         if self.val is not None:
-            self.text = pygame.font.SysFont(None, 65)
-            digit = self.text.render(self.val, True, (255,0,0))
+            text = pygame.font.SysFont(None, 65)
+            digit = text.render(self.val, True, (255,0,0))
             PygameCell.screen.blit(digit, (self.row * PygameCell.size + int(3/num_values) * square_size + 8, self.col * PygameCell.size + int(3/num_values) * square_size - 10))
         else:
             for v in self.posibleValues:
                 val = int(v)
-                digit = self.text.render(v, True, (0,0,0))
+                digit = text.render(v, True, (0,0,0))
                 PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
         pygame.display.flip()
