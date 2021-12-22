@@ -18,20 +18,20 @@ def main():
 def createSudokuPuzzle():
     while(True):
         print("--Elegir Tamaño--")
-        print("1.(9x9)")
-        print("2.(16x16)")
-        print("3.(25x25)")
+        print("1.(4x4)")
+        print("2.(9x9)")
+        print("3.(16x16)")
         print("4.Salir")
         val = int(input())
         match val:
             case 1:
-                createBoard(3)
+                createBoard(2)
                 break
             case 2:
-                createBoard(4)
+                createBoard(3)
                 break
             case 3:
-                createBoard(5)
+                createBoard(4)
                 break
             case __:
                 break
