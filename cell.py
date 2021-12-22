@@ -7,7 +7,7 @@ from utils import *
 import copy
 
 sys.setrecursionlimit(150000)
-wait_milli = 10
+wait_milli = 0
 
 def rowToColIndex(c):
     return ord(c) - 65
@@ -125,7 +125,8 @@ class Tablero:
                      for s in self.squares)
         chars = [d for d in sudoku]
         self.grid_values = dict(zip(self.squares, chars))
-        self.cells = dict((s, CellType(s, self.digits)) for s in self.squares)
+        self.cells = dict((s, CellType(s, self.digits if self.grid_values[s] == '0' else self.grid_values[s])) for s in self.squares)
+        #self.cells = dict((s, CellType(s, self.digits)) for s in self.squares)
 
     def __assign(self, cells, s, d):
         other_values = cells[s].values.replace(d, '')
@@ -190,8 +191,5 @@ def some(seq):
     for e in seq:
         if e: return e
     return False
-
-
-
 
 
