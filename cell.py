@@ -5,7 +5,7 @@ import re
 from utils import *
 import copy
 def rowToColIndex(c):
-    return ord(c) - 64
+    return ord(c) - 65
 
 def getDigits(tableSize):
     if tableSize == 4:
@@ -71,59 +71,71 @@ class Tablero:
         chars = [d for d in sudoku]
         self.grid_values = dict(zip(self.squares, chars))
 
-    def __assign(self, values, s, d):
-        other_values = values[s].replace(d, '')
-        if all(self.__eliminate(values, s, d2) for d2 in other_values):
-            return values
+    def __assign(self, cells, s, d):
+        other_values = cells[s].values.replace(d, '')
+        if all(self.__eliminate(cells, s, d2) for d2 in other_values):
+            return cells
         else:
             return False
 
-    def __eliminate(self, values, s, d):
-        if d not in values[s]:
-            return values ## Already eliminated
-        values[s] = values[s].replace(d, '')
-        if len(values[s]) == 0:
+    def __eliminate(self, cells, s, d):
+        if d not in cells[s].values:
+            return cells ## Already eliminated
+        cells[s].setValues(cells[s].values.replace(d, ''))
+        if len(cells[s].values) == 0:
             return False
-        elif len(values[s]) == 1:
-            d2 = values[s]
-            if not all(self.__eliminate(values, s2, d2) for s2 in self.peers[s]):
+        elif len(cells[s].values) == 1:
+            d2 = cells[s].values
+            if not all(self.__eliminate(cells, s2, d2) for s2 in self.peers[s]):
                 return False
         for u in self.units[s]:
-            dplaces = [s for s in u if d in values[s]]
+            dplaces = [s for s in u if d in cells[s].values]
             if len(dplaces) == 0:
                 return False
             elif len(dplaces) == 1:
-                if not self.__assign(values, dplaces[0], d):
+                if not self.__assign(cells, dplaces[0], d):
                     return False
-        return values
+        return cells
 
-    def __search(self, values):
-        if values is False:
-            return False ## Failed earlier
-        if all(len(values[s]) == 1 for s in self.squares): 
-            return values ## Solved!
-        n,s = min((len(values[s]), s) for s in self.squares if len(values[s]) > 1)
-        return some(self.__search(self.__assign(copy.deepcopy(values), s, d)) 
-            for d in values[s])
+    def __busqueda(self, cells):
+        if cells is False:
+            return False 
+        if all(len(cells[s].values) == 1 for s in self.squares): 
+            return cells
+        n,s = min((len(cells[s].values), s) for s in self.squares if len(cells[s].values) > 1)
+        return some(self.__busqueda(self.__assign(copy.deepcopy(cells), s, d)) 
+            for d in cells[s].values)
 
-    def display(self, values):
+    def display(self, cells):
         "Display these values as a 2-D grid."
-        width = 1+max(len(values[s]) for s in self.squares)
+        width = 1+max(len(cells[s].values) for s in self.squares)
         line = '+'.join(['-'*(width*4)]*4)
         for r in self.rows:
-            print(''.join(values[r+c].center(width)+('|' if c in '48C' else '')
+            print(''.join(cells[r+c].values.center(width)+('|' if c in '48C' else '')
                           for c in self.cols))
             if r in 'DHL': print(line)
 
     def resolver(self):
-        values = dict((s, self.digits) for s in self.squares)
+        values = dict((s, Cell(s, self.digits)) for s in self.squares)
         for s,d in self.grid_values.items():
             if d in self.digits and not self.__assign(values, s, d):
                 return False
-        self.display(self.__search(values))
+        self.display(self.__busqueda(values))
+
+class Cell:
+    def __init__(self, square, values):
+        self.row = rowToColIndex(square[0])
+        self.col = hexToInt(square[1]) - 1
+        self.values = values
+
+    def setValues(self, values):
+        self.values = values
 
 
-
+    #def __init__(self, row, col, values):
+        #self.row = rowToColIndex(row)
+        #self.col = col
+        #self.values = values
 
 def some(seq):
     for e in seq:
@@ -140,10 +152,9 @@ if __name__ == "__main__":
 #class Cell:
     #def __init__(self):
 
-"""
 class PygameCell(Cell):
     surfaceArray = []
-    size = Cell.tableSize * 3
+    size = 9 * 3
     screen = None
     #all_cells = pygame.sprite.RenderUpdates()
     def __init__(self, val: str, row: int, col: int):
@@ -179,4 +190,3 @@ class PygameCell(Cell):
                 digit = text.render(v, True, (0,0,0))
                 PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
         pygame.display.flip()
-"""
