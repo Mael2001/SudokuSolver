@@ -2,6 +2,20 @@ import sys
 import re
 import numpy as np
 import copy
+from utils import *
+
+        
+def parse_grid(grid):
+    """Convert grid to a dict of possible values, {square: digits}, or
+    return False if a contradiction is detected."""
+    ## To start, every square can be any digit; then assign values from the grid.
+    values = dict((s, digits) for s in squares)
+    for s,d in grid_values(grid).items():
+        if d in digits and not assign(values, s, d):
+            return False ## (Fail if we can't assign d to square s.)
+    #for v in values.items():
+        #print(v)
+    return values
 
 def loadSudoku(fileName: str):
     lines = open(fileName).readlines()
@@ -21,28 +35,13 @@ def loadSudoku(fileName: str):
         fila = lines[i]
         for j in range(len(fila)):
             numero = re.search("[0-9]+", fila[j])
-            numero = '0' if numero is None else numero.string
+            numero = '0' if numero is None else intToHex(int(numero.string))
             sudoku += numero
     return sudoku
 
-def parse_grid(grid):
-    """Convert grid to a dict of possible values, {square: digits}, or
-    return False if a contradiction is detected."""
-    ## To start, every square can be any digit; then assign values from the grid.
-    values = dict((s, digits) for s in squares)
-    print(grid_values(grid))
-    for s,d in grid_values(grid).items():
-        if d in digits and not assign(values, s, d):
-            return False ## (Fail if we can't assign d to square s.)
-    #for v in values.items():
-        #print(v)
-
-    return values
-
-
 def grid_values(grid):
     "Convert grid into a dict of {square: char} with '0' or '.' for empties."
-    chars = {int(d) for d in grid if d is not None}
+    chars = [d for d in grid]
     return dict(zip(squares, chars))
 
 def search(values):
@@ -64,10 +63,9 @@ def some(seq):
 def assign(values, s, d):
     """Eliminate all the other values (except d) from values[s] and propagate.
     Return values, except return False if a contradiction is detected."""
-    #other_values = values[s].replace(d, '')
-    other_values = values[s].copy()
-    other_values.discard(d)
-    #print(other_values, values[s])
+    other_values = values[s].replace(d, '')
+    #other_values = values[s].copy()
+    #other_values.discard(d)
     if all(eliminate(values, s, d2) for d2 in other_values):
         return values
     else:
@@ -78,8 +76,8 @@ def eliminate(values, s, d):
     Return values, except return False if a contradiction is detected."""
     if d not in values[s]:
         return values ## Already eliminated
-    #values[s] = values[s].replace(d, '')
-    values[s].discard(d)
+    values[s] = values[s].replace(d, '')
+    #values[s].discard(d)
     ## (1) If a square s is reduced to one value d2, then eliminate d2 from the peers.
     if len(values[s]) == 0:
         return False ## Contradiction: removed last value
@@ -102,15 +100,14 @@ def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [a+b for a in A for b in B]
 
-tableSize = 9
-digits   = { i for i in range(1, tableSize + 1) }
-#digits     = '123456789'
-rows     = 'ABCDEFGHI'
-cols     = '123456789'
+#digits   = { i for i in range(1, tableSize + 1) }
+digits     = '123456789ABCDEFX'
+rows     = 'ABCDEFGHIJKLMNOP'
+cols     = '123456789ABCDEFX'
 squares  = cross(rows, cols)
 unitlist = ([cross(rows, c) for c in cols] +
             [cross(r, cols) for r in rows] +
-            [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')])
+            [cross(rs, cs) for rs in ('ABCD','EFGH','IJKL', 'MNOP') for cs in ('1234','5678','9ABC', 'DEFX')])
 units = dict((s, [u for u in unitlist if s in u]) 
              for s in squares)
 peers = dict((s, set(sum(units[s],[]))-set([s]))
@@ -119,11 +116,11 @@ peers = dict((s, set(sum(units[s],[]))-set([s]))
 def display(values):
     "Display these values as a 2-D grid."
     width = 1+max(len(values[s]) for s in squares)
-    line = '+'.join(['-'*(width*3)]*3)
+    line = '+'.join(['-'*(width*4)]*4)
     for r in rows:
-        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+        print(''.join(values[r+c].center(width)+('|' if c in '48C' else '')
                       for c in cols))
-        if r in 'CF': print(line)
+        if r in 'DHL': print(line)
 
 if __name__ == "__main__":
     display(search(parse_grid(loadSudoku(sys.argv[1]))))
