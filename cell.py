@@ -39,7 +39,8 @@ def cross(A, B):
     return [a+b for a in A for b in B]
 
 class Cell:
-    def __init__(self, square, values):
+    def __init__(self, square, values, val=None):
+        self.val = val
         self.row = rowToColIndex(square[0])
         self.col = hexToInt(square[1]) - 1
         self.values = values
@@ -53,8 +54,8 @@ class PygameCell(Cell):
     sizeFactor = 10
     size = tableSize * sizeFactor
     screen = None
-    def __init__(self, square, values):
-        super(PygameCell, self).__init__(square, values)
+    def __init__(self, square, values, val=None):
+        super(PygameCell, self).__init__(square, values, val)
         self.size = ((PygameCell.size - 2, PygameCell.size - 2))
         PygameCell.surfaceArray.append({
             'fill': pygame.Surface(self.size),
@@ -84,7 +85,10 @@ class PygameCell(Cell):
             for v in self.values:
                 val = hexToInt(v)
                 digit = text.render(str(hexToInt(v)), True, (0,0,0))
-                PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
+                PygameCell.screen.blit(
+                        digit, 
+                        (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8,
+                            self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
         pygame.display.flip()
 
 class Tablero:
@@ -125,7 +129,7 @@ class Tablero:
                      for s in self.squares)
         chars = [d for d in sudoku]
         self.grid_values = dict(zip(self.squares, chars))
-        self.cells = dict((s, CellType(s, self.digits)) for s in self.squares)
+        self.cells = dict((s, CellType(s, self.digits if self.grid_values[s] == '0' else self.grid_values[s], None if self.grid_values[s] == '0' else self.grid_values[s])) for s in self.squares)
 
     def __assign(self, cells, s, d):
         other_values = cells[s].values.replace(d, '')
@@ -141,8 +145,9 @@ class Tablero:
         if len(cells[s].values) == 0:
             return False
         elif len(cells[s].values) == 1:
-            d2 = cells[s].values
+            d2 = cells[s].val = cells[s].values
             if not all(self.__eliminate(cells, s2, d2) for s2 in self.peers[s]):
+                cells[s].val = None
                 return False
         if isinstance(cells[s], PygameCell):
             cells[s].draw()
