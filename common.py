@@ -11,6 +11,7 @@ def calcSubMatrixIndexOffset():
 class Celda:
     tableSize = 9
     units = []
+    nodeCount = 0
     def __init__(self, val: str, row: int, col: int, tableSize: int = None):
         self.val = val
         self.row = row
@@ -20,7 +21,7 @@ class Celda:
         #self.posibleValues = { i for i in range(1, self.tableSize + 1) } if val is None else { i for i in range(val, val+1) }
         self.posibleValues = ""
         for x in range(1, Celda.tableSize + 1):
-            self.posibleValues = self.posibleValues + str(x)
+            self.posibleValues += str(x)
         self.peers = set()
         self.units = []
         unit_col = []

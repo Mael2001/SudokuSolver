@@ -18,24 +18,26 @@ def visual():
     """
     i = 1
     propagated = False
-    while True:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_q:
-                    exit(0)
-                if event.key == K_r:
-                    sudoku[0].discard(i)
-                    i += 1
-                    if len(sudoku[0].posibleValues) == 1:
-                        sudoku[0].val = i
-            elif event.type == QUIT:
+    for event in pygame.event.get():
+        if event.type == KEYDOWN:
+            if event.key == K_q:
                 exit(0)
-            for c in sudoku:
-                c.draw()
-            if not propagated:
-                propagateConstraints(sudoku)
-                propagated = True
+            if event.key == K_r:
+                sudoku[0].discard(i)
+                i += 1
+                if len(sudoku[0].posibleValues) == 1:
+                    sudoku[0].val = i
+        elif event.type == QUIT:
+            exit(0)
+        for c in sudoku:
+            c.draw()
+        if not propagated:
+            for i, cell in enumerate(copy.deepcopy(sudoku)):
+                if cell.val is not None: assign(sudoku, i, cell.val)
+            #propagateConstraints(sudoku)
+            propagated = True
             busqueda(sudoku)
+    print(Celda.nodeCount)
 
 if __name__ == "__main__":
     visual()
