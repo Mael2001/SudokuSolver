@@ -51,12 +51,16 @@ def createBoard(base):
     removeNumbers(side,board)
 
 def removeNumbers(side,board):
+    numSize = len(str(side))
+    filename = "solutionSudoku_"+str(side)+"x"+str(side)+".csv"
+    with open(filename, 'w') as f:
+        with redirect_stdout(f):
+            for line in board: print(",".join(f"{n or ' ':{numSize}}" for n in line))
     squares = side*side
     empties = squares * 3//4
     for p in sample(range(squares),empties):
         board[p//side][p%side] = 0
 
-    numSize = len(str(side))
     filename = "sudoku_"+str(side)+"x"+str(side)+".csv"
     with open(filename, 'w') as f:
         with redirect_stdout(f):
