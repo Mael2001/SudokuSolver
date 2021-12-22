@@ -4,7 +4,7 @@ from cell import *
 import time
 
 class Tablero:
-    delay = 10
+    delay = 15
     def __init__(self, fileName, CellType=Cell):
         self.elps_time = 0
         self.nodeCount = 1
