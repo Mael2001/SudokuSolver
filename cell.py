@@ -1,9 +1,14 @@
+import pygame
 import math
 import numpy as np
 import sys
 import re
 from utils import *
 import copy
+
+sys.setrecursionlimit(150000)
+wait_milli = 10
+
 def rowToColIndex(c):
     return ord(c) - 65
 
@@ -33,8 +38,58 @@ def some(seq):
 def cross(A, B):
     return [a+b for a in A for b in B]
 
+class Cell:
+    def __init__(self, square, values):
+        self.row = rowToColIndex(square[0])
+        self.col = hexToInt(square[1]) - 1
+        self.values = values
+
+    def setValues(self, values):
+        self.values = values
+
+class PygameCell(Cell):
+    tableSize = 9
+    surfaceArray = []
+    sizeFactor = 10
+    size = tableSize * sizeFactor
+    screen = None
+    def __init__(self, square, values):
+        super(PygameCell, self).__init__(square, values)
+        self.size = ((PygameCell.size - 2, PygameCell.size - 2))
+        PygameCell.surfaceArray.append({
+            'fill': pygame.Surface(self.size),
+        #self.outline = pygame.Surface(self.size)
+        #self.outline.fill((255,0,0))
+            'position' :(self.row * PygameCell.size, self.col * PygameCell.size),
+            'text': pygame.font.SysFont(None, int((9/(PygameCell.size/PygameCell.sizeFactor)) * 23)),
+            })
+
+    def __getitem__(self, i):
+        return type(self)
+
+    def draw(self):
+        #PygameCell.screen.blit(self.outline, (self.row * PygameCell.size, self.col * PygameCell.size))
+        arr = PygameCell.surfaceArray[self.row + self.col * int(PygameCell.size/PygameCell.sizeFactor)]
+        text = arr['text']
+        fill = arr['fill']
+        fill.fill((255,255,255))
+        PygameCell.screen.blit(fill, (self.row * (PygameCell.size) + 1, self.col * (PygameCell.size) + 1))
+        num_values = math.sqrt(PygameCell.size/PygameCell.sizeFactor)
+        square_size = PygameCell.size / num_values
+        if len(self.values) == 1:
+            text = pygame.font.SysFont(None, 65)
+            digit = text.render(str(hexToInt(self.values)), True, (255,0,0))
+            PygameCell.screen.blit(digit, (self.row * PygameCell.size + int(square_size * 5/4), self.col * PygameCell.size + int(square_size*5/6)))
+        else:
+            for v in self.values:
+                val = hexToInt(v)
+                digit = text.render(str(hexToInt(v)), True, (0,0,0))
+                PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
+        pygame.display.flip()
+
 class Tablero:
-    def __init__(self, fileName):
+    def __init__(self, fileName, CellType=Cell):
+        self.solved = False
         lines = open(fileName).readlines()
         for c in lines:
             print(c)
@@ -70,6 +125,7 @@ class Tablero:
                      for s in self.squares)
         chars = [d for d in sudoku]
         self.grid_values = dict(zip(self.squares, chars))
+        self.cells = dict((s, CellType(s, self.digits)) for s in self.squares)
 
     def __assign(self, cells, s, d):
         other_values = cells[s].values.replace(d, '')
@@ -88,6 +144,9 @@ class Tablero:
             d2 = cells[s].values
             if not all(self.__eliminate(cells, s2, d2) for s2 in self.peers[s]):
                 return False
+        if isinstance(cells[s], PygameCell):
+            cells[s].draw()
+            pygame.time.wait(wait_milli)
         for u in self.units[s]:
             dplaces = [s for s in u if d in cells[s].values]
             if len(dplaces) == 0:
@@ -106,8 +165,7 @@ class Tablero:
         return some(self.__busqueda(self.__assign(copy.deepcopy(cells), s, d)) 
             for d in cells[s].values)
 
-    def display(self, cells):
-        "Display these values as a 2-D grid."
+    def __display(self, cells):
         width = 1+max(len(cells[s].values) for s in self.squares)
         line = '+'.join(['-'*(width*4)]*4)
         for r in self.rows:
@@ -115,27 +173,18 @@ class Tablero:
                           for c in self.cols))
             if r in 'DHL': print(line)
 
+    def draw(self):
+        for cell in self.cells.items():
+            cell[1].draw()
+
+
     def resolver(self):
-        values = dict((s, Cell(s, self.digits)) for s in self.squares)
+        if self.solved:
+            return True
         for s,d in self.grid_values.items():
-            if d in self.digits and not self.__assign(values, s, d):
+            if d in self.digits and not self.__assign(self.cells, s, d):
                 return False
-        self.display(self.__busqueda(values))
-
-class Cell:
-    def __init__(self, square, values):
-        self.row = rowToColIndex(square[0])
-        self.col = hexToInt(square[1]) - 1
-        self.values = values
-
-    def setValues(self, values):
-        self.values = values
-
-
-    #def __init__(self, row, col, values):
-        #self.row = rowToColIndex(row)
-        #self.col = col
-        #self.values = values
+        self.solved = not self.__busqueda(self.cells) is False
 
 def some(seq):
     for e in seq:
@@ -143,50 +192,6 @@ def some(seq):
     return False
 
 
-if __name__ == "__main__":
-    t = Tablero(sys.argv[1])
-    t.resolver()
 
 
 
-#class Cell:
-    #def __init__(self):
-
-class PygameCell(Cell):
-    surfaceArray = []
-    size = 9 * 3
-    screen = None
-    #all_cells = pygame.sprite.RenderUpdates()
-    def __init__(self, val: str, row: int, col: int):
-        super(PygameCell, self).__init__(val, row, col)
-        self.size = ((PygameCell.size - 2, PygameCell.size - 2))
-        PygameCell.surfaceArray.append({
-            'fill': pygame.Surface(self.size),
-        #self.outline = pygame.Surface(self.size)
-        #self.outline.fill((255,0,0))
-            'position' :(self.row * PygameCell.size, self.col * PygameCell.size),
-            'text': pygame.font.SysFont(None, int(Cell.tableSize * 3)),
-            })
-
-    def __getitem__(self, i):
-        return type(self)
-
-    def draw(self):
-        #PygameCell.screen.blit(self.outline, (self.row * PygameCell.size, self.col * PygameCell.size))
-        arr = PygameCell.surfaceArray[self.row + self.col * Cell.tableSize]
-        text = arr['text']
-        fill = arr['fill']
-        fill.fill((255,255,255))
-        PygameCell.screen.blit(fill, (self.row * (PygameCell.size) + 1, self.col * (PygameCell.size) + 1))
-        num_values = math.sqrt(Cell.tableSize)
-        square_size = PygameCell.size / num_values
-        if self.val is not None:
-            text = pygame.font.SysFont(None, 65)
-            digit = text.render(self.val, True, (255,0,0))
-            PygameCell.screen.blit(digit, (self.row * PygameCell.size + int(3/num_values) * square_size + 8, self.col * PygameCell.size + int(3/num_values) * square_size - 10))
-        else:
-            for v in self.posibleValues:
-                val = int(v)
-                digit = text.render(v, True, (0,0,0))
-                PygameCell.screen.blit(digit, (self.row * PygameCell.size + ((int(val) - 1) % num_values) * square_size + 8, self.col * PygameCell.size + int((int(val) - 1) / num_values) * square_size + 3))
-        pygame.display.flip()
