@@ -19,3 +19,33 @@ def hexToInt(i):
     if i == 'E': return 14
     if i == 'F': return 15
     if i == 'X': return 16
+
+def rowToColIndex(c):
+    return ord(c) - 65
+
+def getDigits(tableSize):
+    if tableSize == 4:
+        return '1234'
+    if tableSize == 9:
+        return '123456789'
+    if tableSize == 16:
+        return '123456789ABCDEFX'
+
+def getRows(tableSize):
+    if tableSize == 4:
+        return 'ABCD'
+    if tableSize == 9:
+        return 'ABCDEFGHI'
+    if tableSize == 16:
+        return 'ABCDEFGHIJKLMNOP'
+
+
+def some(seq):
+    for e in seq:
+        if e: return e
+    return False
+
+
+def cross(A, B):
+    return [a+b for a in A for b in B]
+

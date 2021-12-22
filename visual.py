@@ -1,6 +1,6 @@
-from solver import *
-#from common import Celda
-from cell import *
+import pygame
+from tablero import *
+import argparse
 
 #const globals
 
@@ -19,12 +19,6 @@ def visual():
     """
     solved = False
     while True:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_q:
-                    exit(0)
-            elif event.type == QUIT:
-                exit(0)
         if not solved:
             sudoku.draw()
             sudoku.resolver()
