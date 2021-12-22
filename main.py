@@ -4,7 +4,7 @@ from random import sample
 def main():
     #while(True):
         print("Proyecto Sudoku")
-        print("1.Crear problema sudoku (4x4), (9x9), (15x15)")
+        print("1.Crear problema sudoku (4x4), (9x9), (16x16)")
         print("2.Solucionador Sudoku")
         """val = int(input())
         match val:
