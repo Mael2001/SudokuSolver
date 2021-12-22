@@ -1,22 +1,23 @@
-import pygame
 from tablero import *
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
 import argparse
 
 #const globals
 
 def visual():
+    if len(sys.argv) == 1:
+        print("usage: %s [--delay DELAY] <sudoku_file>", file=sys.stderr)
+        exit(1)
+    for i in range(len(sys.argv)):
+        if "--delay" == sys.argv[i]:
+            Tablero.delay = int(sys.argv[i + 1])
+
     pygame.init()
-    sudoku = Tablero(sys.argv[1], PygameCell)
+    sudoku = Tablero(sys.argv[-1], PygameCell)
     PygameCell.sizeFactor = 10 * 9 / sudoku.tableSize
     PygameCell.screen = pygame.display.set_mode((sudoku.tableSize**2 * PygameCell.sizeFactor, sudoku.tableSize**2 * PygameCell.sizeFactor))
     PygameCell.size = sudoku.tableSize * PygameCell.sizeFactor
-    """
-    for i in range(Celda.tableSize):
-        row = []
-        for j in range(Celda.tableSize):
-            row.append(PygameCell(None, i, j))
-        sudoku.append(row)
-    """
     solved = False
     while True:
         if not solved:

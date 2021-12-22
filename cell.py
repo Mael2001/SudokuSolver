@@ -28,8 +28,6 @@ class PygameCell(Cell):
         self.size = ((PygameCell.size - 2, PygameCell.size - 2))
         PygameCell.surfaceArray.append({
             'fill': pygame.Surface(self.size),
-        #self.outline = pygame.Surface(self.size)
-        #self.outline.fill((255,0,0))
             'position' :(self.row * PygameCell.size, self.col * PygameCell.size),
             'text': pygame.font.SysFont(None, int((9/(PygameCell.size/PygameCell.sizeFactor)) * 23)),
             })
